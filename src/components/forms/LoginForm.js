@@ -1,10 +1,12 @@
 import React from 'react';
 import Validator from 'validator';
 import PropTypes from 'prop-types';
+import Button from 'react-bootstrap-button-loader';
 import {
   Form,
-  Button,
+  Alert,
   FormGroup,
+  // Modal,
   ControlLabel,
   FormControl
 } from 'react-bootstrap';
@@ -29,7 +31,12 @@ class LoginForm extends React.Component {
     const errors = this.validate(this.state.data);
     this.setState({ errors });
     if (Object.keys(errors).length === 0) {
-      this.props.submit(this.state.data);
+      this.setState({ loading: true });
+      this.props
+        .submit(this.state.data)
+        .catch(err =>
+          this.setState({ errors: err.response.data.errors, loading: false })
+        );
     }
   };
   validate = data => {
@@ -40,9 +47,20 @@ class LoginForm extends React.Component {
   };
 
   render() {
-    const { data, errors } = this.state;
+    const { data, errors, loading } = this.state;
     return (
       <Form onSubmit={this.onSubmit}>
+        {errors.global && (
+          <Alert bsStyle="danger">
+            <strong>Something went wrong!</strong>
+            <p>{errors.global}</p>
+          </Alert>
+        )}
+        {/* <Modal show={loading}>
+          <Modal.Body>
+            <h1>Loading...</h1>
+          </Modal.Body>
+        </Modal> */}
         <FormGroup
           controlId="email"
           validationState={errors.email ? 'error' : null}
@@ -71,8 +89,11 @@ class LoginForm extends React.Component {
           />
           {errors.password && <InlineError text={errors.password} />}
         </FormGroup>
+        {/* <Button bsStyle="primary" type="submit">
+          {loading ? 'Loading...' : 'Login'}
+        </Button> */}
         <Button bsStyle="primary" type="submit">
-          Login
+          {loading ? 'Loading....' : 'Login'}
         </Button>
       </Form>
     );
